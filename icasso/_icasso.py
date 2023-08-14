@@ -117,15 +117,18 @@ class Icasso(object):
         self._linkage = linkage(squareform(self._dissimilarity, checks=False),
                                 method='average')
 
-    def plot_dendrogram(self, show=True):
+    def plot_dendrogram(self, ax=None, show=True):
         """ Plots dendrogram of the linkage
         """
         if not self._fit:
             raise Exception("Model must be fitted before plotting")
 
         logger.info("Plotting dendrogram..")
-        fig, ax = plt.subplots(figsize=(25, 10))
-        fig.suptitle('Hierarchical Clustering Dendrogram')
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(25, 10))
+            fig.suptitle('Hierarchical Clustering Dendrogram')
+        else:
+            ax.set_title('Hierarchical Clustering Dendrogram')
         ax.set_xlabel('Sample index')
         ax.set_ylabel('Distance')
         dendrogram(
@@ -138,16 +141,15 @@ class Icasso(object):
         )
         if show:
             plt.show()
-        return fig
 
-    def plot_mds(self, distance=0.8, decimate=1, show=True):
+    def plot_mds(self, distance=0.8, decimate=1, show=True, ax=None):
         """ Plots components projected to 2d space and draws hulls around clusters
         """
         if not self._fit:
             raise Exception("Model must be fitted before plotting")
 
         logger.info("Projecting components to 2D space with MDS")
-        mds = MDS(n_components=2, max_iter=3000, eps=1e-9,
+        mds = MDS(n_components=2, max_iter=3000, eps=1e-9, normalized_stress=False,
                   random_state=self._random_state, dissimilarity="precomputed")
 
         dissimilarity = self._dissimilarity.copy()
@@ -199,8 +201,11 @@ class Icasso(object):
         logger.info("Plotting ICA components in 2D space..")
 
         # plot components as points in 2D plane
-        fig, ax = plt.subplots(figsize=(25, 10))
-        fig.suptitle('MDS')
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(25, 10))
+            fig.suptitle('MDS')
+        else:
+            ax.set_title('MDS')
         sc = ax.scatter(pos[:, 0], pos[:, 1], c='red', s=5)
 
         # now there should be as many hulls as there are scores so we
@@ -231,7 +236,6 @@ class Icasso(object):
 
         if show:
             plt.show()
-        return fig
 
     def get_centrotype_unmixing(self, distance=0.8):
         if not self._fit:
